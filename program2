@@ -1,0 +1,272 @@
+{
+  "name": "hrms-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.6.2",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  }
+}
+
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('hrms', 'username', 'password', {
+  host: 'localhost',
+  dialect: 'postgres',
+});
+
+module.exports = sequelize;
+
+const Sequelize = require('sequelize');
+const sequelize = require('../config/database');
+
+const Employee = sequelize.define('Employee', {
+  employee_id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+  name: Sequelize.STRING,
+  email: Sequelize.STRING,
+  phone: Sequelize.STRING,
+  address: Sequelize.STRING,
+  password: Sequelize.STRING,
+  department_id: { type: Sequelize.INTEGER, references: { model: 'Departments', key: 'department_id' } },
+  role_id: { type: Sequelize.INTEGER, references: { model: 'Roles', key: 'role_id' } },
+  created_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+  updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+});
+
+const Department = sequelize.define('Department', {
+  department_id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+  name: Sequelize.STRING,
+  created_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+  updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+});
+
+const Role = sequelize.define('Role', {
+  role_id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+  title: Sequelize.STRING,
+  created_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+  updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+});
+
+const PerformanceReview = sequelize.define('PerformanceReview', {
+  review_id: { type: Sequelize.INTEGER, autoIncrement: true, primaryKey: true },
+  employee_id: { type: Sequelize.INTEGER, references: { model: 'Employees', key: 'employee_id' } },
+  review_date: Sequelize.DATE,
+  rating: Sequelize.INTEGER,
+  comments: Sequelize.TEXT,
+  created_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+  updated_at: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+});
+
+// Associations
+Employee.belongsTo(Department, { foreignKey: 'department_id' });
+Employee.belongsTo(Role, { foreignKey: 'role_id' });
+Employee.hasMany(PerformanceReview, { foreignKey: 'employee_id' });
+
+sequelize.sync();
+
+module.exports = { sequelize, Employee, Department, Role, PerformanceReview };
+
+const { Employee, Department, Role, PerformanceReview } = require('../models');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+exports.getAllEmployees = async (req, res) => {
+  try {
+    const employees = await Employee.findAll();
+    res.json(employees);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getEmployeeById = async (req, res) => {
+  try {
+    const employee = await Employee.findByPk(req.params.id);
+    res.json(employee);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createEmployee = async (req, res) => {
+  try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const employee = await Employee.create({ ...req.body, password: hashedPassword });
+    res.json(employee);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateEmployee = async (req, res) => {
+  try {
+    const employee = await Employee.findByPk(req.params.id);
+    await employee.update(req.body);
+    res.json(employee);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteEmployee = async (req, res) => {
+  try {
+    const employee = await Employee.findByPk(req.params.id);
+    await employee.destroy();
+    res.json({ message: 'Employee deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllDepartments = async (req, res) => {
+  try {
+    const departments = await Department.findAll();
+    res.json(departments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getDepartmentById = async (req, res) => {
+  try {
+    const department = await Department.findByPk(req.params.id);
+    res.json(department);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createDepartment = async (req, res) => {
+  try {
+    const department = await Department.create(req.body);
+    res.json(department);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateDepartment = async (req, res) => {
+  try {
+    const department = await Department.findByPk(req.params.id);
+    await department.update(req.body);
+    res.json(department);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteDepartment = async (req, res) => {
+  try {
+    const department = await Department.findByPk(req.params.id);
+    await department.destroy();
+    res.json({ message: 'Department deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllRoles = async (req, res) => {
+  try {
+    const roles = await Role.findAll();
+    res.json(roles);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getRoleById = async (req, res) => {
+  try {
+    const role = await Role.findByPk(req.params.id);
+    res.json(role);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createRole = async (req, res) => {
+  try {
+    const role = await Role.create(req.body);
+    res.json(role);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateRole = async (req, res) => {
+  try {
+    const role = await Role.findByPk(req.params.id);
+    await role.update(req.body);
+    res.json(role);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteRole = async (req, res) => {
+  try {
+    const role = await Role.findByPk(req.params.id);
+    await role.destroy();
+    res.json({ message: 'Role deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllPerformanceReviews = async (req, res) => {
+  try {
+    const performanceReviews = await PerformanceReview.findAll();
+    res.json(performanceReviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getPerformanceReviewById = async (req, res) => {
+  try {
+    const performanceReview = await PerformanceReview.findByPk(req.params.id);
+    res.json(performanceReview);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createPerformanceReview = async (req, res) => {
+  try {
+    const performanceReview = await PerformanceReview.create(req.body);
+    res.json(performanceReview);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updatePerformanceReview = async (req, res) => {
+  try {
+    const performanceReview = await PerformanceReview.findByPk(req.params.id);
+    await performanceReview.update(req.body);
+    res.json(performanceReview);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deletePerformanceReview = async (req, res) => {
+  try {
+    const performanceReview = await PerformanceReview.findByPk(req.params.id);
+    await performanceReview.destroy();
+    res.json({ message: 'Performance Review deleted' });
+  } catch (err) {
+    res.status(500).json({ error
+
