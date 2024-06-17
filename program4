@@ -1,0 +1,226 @@
+{
+  "name": "project-management-backend",
+  "version": "1.0.0",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.6.2",
+    "bcryptjs": "^2.4.3",
+    "socket.io": "^4.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  }
+}
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize('project_management', 'username', 'password', {
+  host: 'localhost',
+  dialect: 'postgres',
+});
+
+module.exports = sequelize;
+const { Project, Task, Team, Timeline } = require('../models');
+
+exports.getAllProjects = async (req, res) => {
+  try {
+    const projects = await Project.findAll();
+    res.json(projects);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getProjectById = async (req, res) => {
+  try {
+    const project = await Project.findByPk(req.params.id);
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createProject = async (req, res) => {
+  try {
+    const project = await Project.create(req.body);
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateProject = async (req, res) => {
+  try {
+    const project = await Project.findByPk(req.params.id);
+    await project.update(req.body);
+    res.json(project);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteProject = async (req, res) => {
+  try {
+    const project = await Project.findByPk(req.params.id);
+    await project.destroy();
+    res.json({ message: 'Project deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllTasks = async (req, res) => {
+  try {
+    const tasks = await Task.findAll();
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getTaskById = async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createTask = async (req, res) => {
+  try {
+    const task = await Task.create(req.body);
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateTask = async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    await task.update(req.body);
+    res.json(task);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteTask = async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    await task.destroy();
+    res.json({ message: 'Task deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllTeams = async (req, res) => {
+  try {
+    const teams = await Team.findAll();
+    res.json(teams);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getTeamById = async (req, res) => {
+  try {
+    const team = await Team.findByPk(req.params.id);
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createTeam = async (req, res) => {
+  try {
+    const team = await Team.create(req.body);
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateTeam = async (req, res) => {
+  try {
+    const team = await Team.findByPk(req.params.id);
+    await team.update(req.body);
+    res.json(team);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteTeam = async (req, res) => {
+  try {
+    const team = await Team.findByPk(req.params.id);
+    await team.destroy();
+    res.json({ message: 'Team deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getAllTimelines = async (req, res) => {
+  try {
+    const timelines = await Timeline.findAll();
+    res.json(timelines);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getTimelineById = async (req, res) => {
+  try {
+    const timeline = await Timeline.findByPk(req.params.id);
+    res.json(timeline);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.createTimeline = async (req, res) => {
+  try {
+    const timeline = await Timeline.create(req.body);
+    res.json(timeline);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.updateTimeline = async (req, res) => {
+  try {
+    const timeline = await Timeline.findByPk(req.params.id);
+    await timeline.update(req.body);
+    res.json(timeline);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.deleteTimeline = async (req, res) => {
+  try {
+    const timeline = await Timeline.findByPk(req.params.id);
+    await timeline.destroy();
+    res.json({ message: 'Timeline deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers');
+
+router.get('/projects', controller.getAllProjects);
+router.get('/projects/:id', controller.getProjectById
